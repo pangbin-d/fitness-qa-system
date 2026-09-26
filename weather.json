@@ -1,0 +1,20 @@
+[
+  {
+    "city": "Weifang",
+    "humidity": "94",
+    "temp_C": "16",
+    "desc": "Overcast "
+  },
+  {
+    "city": "Beijing",
+    "humidity": "60",
+    "temp_C": "24",
+    "desc": "Moderate rain at times"
+  },
+  {
+    "city": "Shanghai",
+    "humidity": "68",
+    "temp_C": "27",
+    "desc": "Cloudy "
+  }
+]
