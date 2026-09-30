@@ -15,11 +15,13 @@
 - Git / GitHub
 ## 项目结构
 
+```
 fitness-qa-system/
 ├── chatbot.py                  # 命令行聊天机器人（多轮上下文记忆）
 ├── requirements.txt            # 项目依赖
 ├── README.md                   # 项目说明
 ├── .gitignore                  # Git 忽略规则
+```
 ## 快速开始
 
 1. 克隆仓库
