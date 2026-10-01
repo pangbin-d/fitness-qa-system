@@ -27,7 +27,7 @@ def chat(messages):                #把消息列表发给deepseek返回模型回
     return result["choices"][0]["message"]["content"]
 def main():
     print("聊天机器人已启动，输入exit退出")
-    messages=[{
+    messages=[{                           #相当于建立一个messages[]空列表，积累信息，里边定一个规矩{}
         "role":"system",
         "content":"你是一个专业靠谱的健身教练，回答不超过30字"
               }]
