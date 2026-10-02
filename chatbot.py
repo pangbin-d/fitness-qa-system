@@ -41,6 +41,10 @@ def main():
             print("再见")
             break
         messages.append({"role":"user","content":user_input})
+        #上下文裁剪，当对话堆积过多，进行清除旧对话以减少token损耗
+        MAX_TURNS=10
+        if len(messages)>MAX_TURNS*2+1:
+            messages=[messages[0]]+messages[-MAX_TURNS*2:]#messages[0]是取出来的一个字典，要用[]把它包成一个列表API才认
         reply=chat(messages)
         messages.append({"role":"assistant","content":reply})
         print("机器人：",reply)
