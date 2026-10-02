@@ -4,6 +4,7 @@
 '''
 import os                         #读环境变量
 import requests                   #发送HTTP请求
+from build_api_config import build_api_config
 from dotenv import load_dotenv    #把.env里的key加载进来
 load_dotenv()
 API_KEY=os.getenv("DEEPSEEK_API_KEY")
@@ -15,12 +16,14 @@ def chat(messages):                #把消息列表发给deepseek返回模型回
         "Authorization":f"Bearer {API_KEY}",
         "Content-Type":"application/json"
     }
-    data={
+    #函数封装
+    data=build_api_config('deepseek-chat',0.7,512)
+    data['messages']=messages
+    '''data={                          列字典写法：
         "model":"deepseek-chat",
         "messages":messages,
         "temperature":0.7,         #表示回答的随机性0.7是默认值，1.5＋适用于创作，0表示答案不变
-        "max_tokens":512          #token是模型切文本的最小单位，一个字约等于1.5~2token，聊天一般是512~1024
-    }
+        "max_tokens":512   }       #token是模型切文本的最小单位，一个字约等于1.5~2token，聊天一般是512~1024'''
     response=requests.post(url=API_URL,headers=headers,json=data)
     response.raise_for_status()
     result=response.json()         #.json表示转换，将json文件转换成python字典塞进变量里
@@ -29,7 +32,7 @@ def main():
     print("聊天机器人已启动，输入exit退出")
     messages=[{                           #相当于建立一个messages[]空列表，积累信息，里边定一个规矩{}
         "role":"system",
-        "content":"你是一个专业靠谱的健身教练，回答不超过30字"
+        "content":"你是一个专业靠谱，有点毒舌的健身教练。"
               }]
     while True:                    #因为机器人要一轮接一轮的对话
         user_input=input("我：")
