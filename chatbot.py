@@ -35,8 +35,16 @@ client=OpenAI(
 def chat(messages):
     data=build_api_config('deepseek-chat',0.7,512)
     data['messages']=messages
-    response=client.chat.completions.create(**data)
-    return response.choices[0].message.content
+    data['stream']=True              #总开关，开启水流模式
+    stream=client.chat.completions.create(**data)#一个水流对象，相当于管子，数据顺着管子流出来
+    reply=""               #准备一个空字符串当篮子，让存进messages里的碎片信息拼接完整
+    for chunk in stream:    #流式输出是来一个小包转一圈，普通写法调一次API拿一个结果，流式写法要循环接N个小包
+        delta=chunk.choices[0].delta.content #delta代表增量，不是普通版message，每个包只装新冒出来的几个字，不是一整句话
+        if delta:
+            print(delta,end="",flush=True)  #end“”的意思是print的自动换行改成末尾用空字符串代替；flush=True意思是不要积攒，立刻显示
+            reply +=delta
+    print()                       #流式输出结束单独补一个换行不然提示符和下一轮的“我：”会挤在同一行
+    return reply
 def main():
     print("聊天机器人已启动，输入exit退出")
     messages=[{                           #相当于建立一个messages[]空列表，积累信息，里边定一个规矩{}
@@ -54,9 +62,10 @@ def main():
         MAX_TURNS=10
         if len(messages)>MAX_TURNS*2+1:
             messages=[messages[0]]+messages[-MAX_TURNS*2:]#messages[0]是取出来的一个字典，要用[]把它包成一个列表API才认
+            #流式输出的顺序是按照屏幕显示的先后排，不是按照数据处理排的。先print，再接reply；messages.append相当于把完整回复存进上下文
+        print("机器人：", end="")
         reply=chat(messages)
         messages.append({"role":"assistant","content":reply})
-        print("机器人：",reply)
 if __name__=="__main__":           #文件被直接调用时才用到main（），被别的模块import时代码不会自动执行。
     main()                         #调用一下让代码真的跑起来
 
