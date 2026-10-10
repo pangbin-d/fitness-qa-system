@@ -2,3 +2,9 @@
 _pycache_/
 *.pyc
 .idea/
+logs.csv
+news.jsonl
+out.json
+quota_log.txt
+coding.txt
+writing.txt
