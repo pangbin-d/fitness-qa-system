@@ -36,7 +36,12 @@ def chat(messages):
     data=build_api_config('deepseek-chat',0.7,512)
     data['messages']=messages
     data['stream']=True              #总开关，开启水流模式
-    stream=client.chat.completions.create(**data)#一个水流对象，相当于管子，数据顺着管子流出来
+    #网络挂了抛出异常，让main好接收
+    try:
+        stream=client.chat.completions.create(**data)#一个水流对象，相当于管子，数据顺着管子流出来
+    except Exception as e:
+        raise RuntimeError(f"API请求失败：{e}")
+
     reply=""               #准备一个空字符串当篮子，让存进messages里的碎片信息拼接完整
     for chunk in stream:    #流式输出是来一个小包转一圈，普通写法调一次API拿一个结果，流式写法要循环接N个小包
         delta=chunk.choices[0].delta.content #delta代表增量，不是普通版message，每个包只装新冒出来的几个字，不是一整句话
@@ -45,27 +50,48 @@ def chat(messages):
             reply +=delta
     print()                       #流式输出结束单独补一个换行不然提示符和下一轮的“我：”会挤在同一行
     return reply
+
 def main():
-    print("聊天机器人已启动，输入exit退出")
-    messages=[{                           #相当于建立一个messages[]空列表，积累信息，里边定一个规矩{}
-        "role":"system",
-        "content":"你是一个专业靠谱，有点毒舌的健身教练。"
-              }]
+    print("===文武的健身AI助手V1.0===")
+    print("输入/help查看命令，输入/quit 退出\n")
+    messages=[]
     while True:                    #因为机器人要一轮接一轮的对话
-        user_input=input("我：")
-        if user_input.strip().lower()=="exit":
-        #给用户输入清洗干净的方法，strip（）去掉首尾空格，换行;lower()全转小写。防止用户输入成Exit之类的，属于防御性编程。
-            print("再见")
-            break
+        user_input=input("\n我：").strip()
+        if not user_input:      #空输出直接进下一轮，不发请求
+            continue
+        if user_input.startswith('/'):
+            if user_input=='/quit':
+               print("再见")
+               break
+            elif user_input=='/help':
+                print("支持的命令")
+                print("/help - 显示本帮助")
+                print("/reset - 清空对话历史")
+                print("/quit - 退出程序")
+                pass
+            elif user_input=='/reset':
+                messages.clear()
+                print("对话已重置")
+                pass
+            else:
+                print("未知命令，输入/help 查看支持的命令")
+                continue
         messages.append({"role":"user","content":user_input})
+        print("助手：",end="")
+
         #上下文裁剪，当对话堆积过多，进行清除旧对话以减少token损耗
         MAX_TURNS=10
         if len(messages)>MAX_TURNS*2+1:
             messages=[messages[0]]+messages[-MAX_TURNS*2:]#messages[0]是取出来的一个字典，要用[]把它包成一个列表API才认
             #流式输出的顺序是按照屏幕显示的先后排，不是按照数据处理排的。先print，再接reply；messages.append相当于把完整回复存进上下文
-        print("机器人：", end="")
-        reply=chat(messages)
-        messages.append({"role":"assistant","content":reply})
+
+        try:      #API挂了不让整个程序死
+            reply=chat(messages)
+            messages.append({"role":"assistant","content":reply})
+        except Exception as e:
+            print(f"\n请求出错：{e}")
+            messages.pop()       #把这轮刚append的user消息拿走
+            pass
 if __name__=="__main__":           #文件被直接调用时才用到main（），被别的模块import时代码不会自动执行。
     main()                         #调用一下让代码真的跑起来
 
