@@ -8,6 +8,7 @@ def build_api_config(model_name:str,temperature:float=0.7,max_tokens:int=100,top
         "max_tokens":max_tokens,
         'top_p':top_p
     }
+
 if __name__=='__main__':
    print(build_api_config('gpt-4',0.5))
    print(build_api_config('gpt4'))
