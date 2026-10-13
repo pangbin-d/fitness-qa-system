@@ -45,14 +45,16 @@ REVIEWER_SYS = """你是一名健身问答质量评审专家，只评测问答�
 输出格式：
 {"correctness": x, "relevance": x, "actionability": x, "safety": x, "comment": "一句话总评"}"""
 #零件二：客户端＋调用函数
+#造工具，即客户端对象
 def make_client():
-    return OpenAI(
+    return OpenAI(               #return把造好的对象交到调用者手里，让main里的client=make_client（）接收到
         api_key=os.getenv('DEEPSEEK_API_KEY'),
         base_url=os.getenv("DEEPSEEK_BASE_URL",'https://api.deepseek.com')
     )
+#调用一次工具的标准动作
 def ask(client,system_prompt,user_content,temperature=0.7):
     """同一次请求 = system 立规矩 + user 提问题"""
-    resp=client.chat.completions.create(
+    resp=client.chat.completions.create(   #client.chat.completions.create是把请求发出去，返回值塞进resp
         model="deepseek-chat",
         messages=[
             {
@@ -66,22 +68,24 @@ def ask(client,system_prompt,user_content,temperature=0.7):
         ],
         temperature=temperature
     )
-    return resp.choices[0].message.content
+    return resp.choices[0].message.content        #return的是最后的content（字符串内容），作用是交出正文
 #零件三，四：同一个问题跑三个角色，再让评审干活
-def main():
-    client=make_client()
+def main():                                 #main只管安排不干活，没有return，任务是跑完整个流程并打印结果。
+    client=make_client()                    #先造好对象
     question="我膝盖有点疼，还能练深蹲嘛？练完吃什么能长肌肉？"
-    roles=[
+    roles=[                                  #列表装元组
         ("健身教练",COACH_SYS,0.7),
         ("营养师",NUTRITIONIST_SYS,0.7),
         ("评审专家",REVIEWER_SYS,0.3),
     ]
+    # 空字典当仓库
     answers={}
-    for name,sys_prompt,temp in roles:
+    for name,sys_prompt,temp in roles:      #相当于解包
         print("="*50)
         print(f"[{name}]")
-        answer=ask(client,sys_prompt,question,temperature=temp)
+        answer=ask(client,sys_prompt,question,temperature=temp)   #question不变，变的只有sys_prompt和temp
         print(answer)
+        #回答存进仓库，每次回答按照角色名字存进字典，目的是把教练回答翻出来给评审
         answers[name]=answer
     review_input=(f"用户问题：{question}\n\n"
                   f"教练回答{answers["健身教练"]}\n\n"
@@ -89,6 +93,8 @@ def main():
                   )
     print("="*50)
     print('[评审专家评测教练回答]')
+    #评审二次上岗，ask把content字符串return回来，print打印到屏幕。
     print(ask(client,REVIEWER_SYS,review_input,temperature=0.3))
+
 if __name__=="__main__":
     main()
