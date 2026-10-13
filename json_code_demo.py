@@ -7,11 +7,15 @@ client=OpenAI(
     api_key=os.getenv("DEEPSEEK_API_KEY"),
     base_url='https://api.deepseek.com'
 )
+# 层级	                             管什么	                 强制吗	 什么时候用
+# json_object	                外壳是合法 JSON	            ✅ 强制	  默认开启
+# prompt + schema + few-shot	字段名/类型/枚举	            ❌ 约定	  绝大多数场景够用
+# json_schema + strict	        字段名/类型/枚举/必填/禁止多余	✅ 真强制  字段多、枚举复杂、必须稳
 system_prompt = """
 你是健身问答评审专家。对用户给出的"问题"和"回答"从四个维度打分，
-每个维度1-5分，并给出总体评语。必须输出JSON格式。
+每个维度1-5分，并给出总体评语。必须输出JSON格式。              #在prompt中写死schema
 
-EXAMPLE JSON OUTPUT:
+EXAMPLE JSON OUTPUT:                                   #在prompt中加few shot                    
 {
     "accuracy": 4,
     "completeness": 3,
@@ -28,7 +32,7 @@ messages=[
 response=client.chat.completions.create(
     model='deepseek-chat',
     messages=messages,
-    response_format={'type':'json_object'}
+    response_format={'type':'json_object'}          #结构化输出的关键代码，但是只管是不是合法JSON结构，不管里面装啥
 )
 content=response.choices[0].message.content
 if not content:
