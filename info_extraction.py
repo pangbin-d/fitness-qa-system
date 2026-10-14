@@ -1,7 +1,14 @@
+#这段信息抽取代码的作用： 数据持久化 + 解耦
+# 持久化：单纯在终端显示，内存里的变量程序一关就死，写进文件才"活"下来
+# 解耦：抽取程序和打分程序各干各的，中间用文件传话。抽取半夜跑完，你第二天再打分都行，两个程序甚至能两台电脑跑。
+# 类比：print是你拿嘴报数，报完就散；jsonl是快递员把包裹**扫描入库**，后面分拣、运输、签收全靠这条入库记录。
 import os
 import json
 from openai import OpenAI
 from dotenv import load_dotenv
+QUESTIONS_FILE='question_extraction.txt'
+#.json是一个文件一整个大数组全跑完再写，中途崩了直接废；.jsonl是每行一个独立对象，跑完一条过一条，以后追加也方便
+OUTPUT_FILE='results.jsonl'
 load_dotenv()
 EXTRACT_SYS = """你是一个健身咨询信息抽取器。
 从用户的健身描述中抽取信息，只输出一个JSON对象，字段如下：
@@ -73,17 +80,37 @@ def extract_info(client,paragraph):
     )
     raw=resp.choices[0].message.content
     return json.loads(raw)
+def load_questions(path):
+    #读题库，每行一道题，strip换掉换行符和空格，空行跳过。
+    questions=[]
+    with open(path,'r',encoding='utf-8')as f:
+        for line in f:
+            text=line.strip()
+            if text:
+                questions.append(text)
+    return questions
 def main():
+    #1.开工准备（循环外只干一次）
     client=make_client()
-    tests=[ "我140斤，想练大块头，以前膝盖受过伤，宿舍只有一对哑铃，每周能练4天",
-        "我就想随便活动活动，身体没啥毛病",
-        "想减肥，130斤，膝盖和腰都不太好，有弹力带和瑜伽垫，一周练个四五次吧",
-        "我室友180斤想增肌，我自己60公斤，就想瘦腿，没有器械，一周在家跟视频练3次",
-    ]
-    for text in tests:
-        print(f"原文{text}")
-        result=extract_info(client,text)
-        print(json.dumps(result,ensure_ascii=False,indent=2))
-        print("="*50)
+    questions=load_questions(QUESTIONS_FILE)             #获取四道题的清单列表
+    #2.打开成品仓库
+    with open(OUTPUT_FILE,'w',encoding='utf-8')as out:   #想重跑新文件用w，想在旧文件后边追加用a；out是文件对象，write就是往这里边写东西
+        #3.流水线，每个零件走一遍
+        for i,text in enumerate(questions,start=1):      #enumerate相当于取号机，一边遍历一边发号i是号，text是段落
+            print(f"[{i}/{len(questions)}抽取中...")
+            try:
+                result=extract_info(client,text)
+                record={                                 #record相当于一个包裹把问题和回答包在一起
+                    'question':text,
+                    "result":result
+                }
+            except Exception as e:
+                record={
+                    'question':text,
+                    "error":str(e)           #e是错误对象，str（e）是变成能让dumps转换成字典的文本格式。保证record一直存在，不会以因为异常就崩溃。
+                }
+            out.write(json.dumps(record,ensure_ascii=False)+"\n")   #\n是jsonl格式的灵魂，一行一件。
+            out.flush()                                  #写完一条立刻保存，不在缓冲区攒着
+        print(f"收工，共{len(questions)}条-->{OUTPUT_FILE}")
 if __name__=="__main__":
     main()
