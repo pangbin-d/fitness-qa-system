@@ -7,4 +7,6 @@ news.jsonl
 out.json
 quota_log.txt
 coding.txt
-writing.txtout/
+writing.txt
+out/
+results.jsonl
