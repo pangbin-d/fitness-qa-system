@@ -82,7 +82,7 @@ RETRYABLE_ERRORS=(
     InternalServerError
 )
 #这个函数不管抽取的业务，只保证一件事就是连接通没通，要么通了返回回话，要么连接尝试满四次认栽
-def chat_with_retry(client,msgs,temperature=0,json_mode=True):   #messages是要传的信息
+def chat_with_retry(client,msgs,temperature=0,json_mode=True):   #msgs是要传的信息
     response_format={'type':'json_object'} if json_mode else None    #后边的if意思是：要JSON就写配置，不要就None
     for attempt in range(MAX_RETRIES+1):
         try:
