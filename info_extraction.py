@@ -3,7 +3,16 @@
 # 解耦：抽取程序和打分程序各干各的，中间用文件传话。抽取半夜跑完，你第二天再打分都行，两个程序甚至能两台电脑跑。
 # 类比：print是你拿嘴报数，报完就散；jsonl是快递员把包裹**扫描入库**，后面分拣、运输、签收全靠这条入库记录。
 import os
+import time
+from openai import (              #（）里是SDK"临时故障"的标准四件套
+APITimeoutError,
+APIConnectionError,
+RateLimitError,
+InternalServerError
+)
 import json
+import time
+
 from openai import OpenAI
 from dotenv import load_dotenv
 QUESTIONS_FILE='question_extraction.txt'
@@ -65,19 +74,40 @@ def make_client():
         api_key=os.getenv("DEEPSEEK_API_KEY"),
         base_url=os.getenv("DEEPSEEK_BASE_URL","https://api.deepseek.com")
     )
+MAX_RETRIES=3                    #代表第几轮尝试
+RETRYABLE_ERRORS=(
+    APITimeoutError,
+    APIConnectionError,
+    RateLimitError,
+    InternalServerError
+)
+#这个函数不管抽取的业务，只保证一件事就是连接通没通，要么通了返回回话，要么连接尝试满四次认栽
+def chat_with_retry(client,msgs,temperature=0,json_mode=True):   #messages是要传的信息
+    response_format={'type':'json_object'} if json_mode else None    #后边的if意思是：要JSON就写配置，不要就None
+    for attempt in range(MAX_RETRIES+1):
+        try:
+            return client.chat.completions.create(
+                model='deepseek-chat',
+                messages=msgs,
+                temperature=temperature,
+                response_format=response_format,
+            )
+        except RETRYABLE_ERRORS as e:          #意思是只接四种临时故障
+            if attempt==MAX_RETRIES:
+                #type(e).__name__这个格式是点号链，先拿到e，再查它的类，再只取类型的名字（类的属性）
+                print(f"连打{MAX_RETRIES+1}次全挂，放弃：{type(e).__name__}")
+                raise              #连着四次都挂了就打印遗言然后raise抛出去，直接给到main里的error行
+            wait=2 ** attempt
+            print(f"第{attempt+1}次挂了({type(e).__name__}),{wait}秒后重拨...")
+            time.sleep(wait)               #和main里的sleep区别是只有失败才睡目的是给故障恢复留时间窗口。
 def extract_info(client,paragraph):
-    messages=([{
+    msgs=([{
         "role":"system",'content':EXTRACT_SYS
     }]+FEW_SHOT+[{                        #FEW_SHOT是可复用的题目例子，所以写在[]外面每次循环都调用一次。
         "role":"user","content":paragraph
     }]
               )
-    resp=client.chat.completions.create(
-        model='deepseek-chat',
-        messages=messages,
-        temperature=0,
-        response_format={"type":"json_object"}
-    )
+    resp=chat_with_retry(client,msgs)
     raw=resp.choices[0].message.content
     return json.loads(raw)
 def load_questions(path):
@@ -111,6 +141,7 @@ def main():
                 }
             out.write(json.dumps(record,ensure_ascii=False)+"\n")   #\n是jsonl格式的灵魂，一行一件。
             out.flush()                                  #写完一条立刻保存，不在缓冲区攒着
+            time.sleep(1)                                #每条之间歇一条，400条题是不会被限流
         print(f"收工，共{len(questions)}条-->{OUTPUT_FILE}")
 if __name__=="__main__":
     main()
