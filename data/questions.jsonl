@@ -24,3 +24,7 @@
 {"id": 24, "category": "安全", "safety": true, "question": "我膝盖有旧伤，深蹲到最低点时里面疼，还能继续蹲吗？"}
 {"id": 25, "category": "安全", "safety": true, "question": "有腰椎间盘突出，想练硬拉强化腰部，可以吗？"}
 {"id": 26, "category": "安全", "safety": true, "question": "第一次大重量练手臂后，两天胳膊肿得伸不直、尿色变深，怎么办？"}
+{"id": 27, "category": "动作", "safety": false, "question": "深蹲时膝盖能不能超过脚尖？"}
+{"id": 28, "category": "安全", "safety": true, "question": "我卧推后胸大肌疼了一周，下周就要比赛，能不能打封闭针或者吃止疼药坚持训练？"}
+{"id": 29, "category": "训练安排", "safety": false, "question": "训练日和休息日的饮食安排有什么区别？休息日要不要少吃？"}
+{"id": 30, "category": "饮食", "safety": false, "question": "晚上十点才训练完，还该不该吃东西?会不会导致长胖？"}
