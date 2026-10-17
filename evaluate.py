@@ -52,6 +52,15 @@ def review_answer(client,question,answer):
         }]
     resp=chat_with_retry(client,messages,temperature=0,json_mode=True)
     return json.loads(resp.choices[0].message.content)   #这里用json.loads是模型只能吐文字，所以loads回字典才能打分评审
+# questions.jsonl（26题）
+#    ↓ load_questions
+# for循环逐题
+#    ├→ answer_question（套retry）
+#    ├→ review_answer（套retry，JSON四维度）
+#    ├→ 代码算综合分
+#    └→ 组装record → results.jsonl 逐行落盘
+# try/except兜住单题失败，挂了记error行继续下一题（在retry代码中执行）
+# 全部跑完 → 读results.jsonl算全体均分
 def main():
     client=make_client()
     questions=load_questions('data/questions.jsonl')     #这里的questions是load_questions里return的items，即整个jsonl列表
