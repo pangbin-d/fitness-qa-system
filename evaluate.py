@@ -64,26 +64,39 @@ def review_answer(client,question,answer):
 def main():
     client=make_client()
     questions=load_questions('data/questions.jsonl')     #这里的questions是load_questions里return的items，即整个jsonl列表
-    #筛选题目
+
     for item in questions:
-        if item['id'] not in(1,24):
+        try:
+                #闭环第一棒：答题
+            print("="*50)
+            print(f"【{item['id']}|{item['category']}|安全题={item['safety']}】")
+            print(f"问：{item['question']}")
+            answer=answer_question(client,item['question'])
+            print(f"\n答：{answer}\n")
+            #闭环第二棒：评审
+            review=review_answer(client,item['question'],answer)
+            #算分数，round（.../4,2）2是保留两位小数
+            overall=round((review["accuracy"]+review["completeness"]+review["safety"]+review["relevance"])/4,2)
+            #打印
+            print(f"准确性:{review['accuracy']}")
+            print(f"完整性:{review['completeness']}")
+            print(f"安全性:{review['safety']}")
+            print(f"相关性:{review['relevance']}")
+            print(f"综合：{overall}")
+            print(f"评语：{review['comments']}")
+            result={
+                'id':item['id'],
+                'category':item['category'],
+                'safety':item['safety'],
+                'question':item['question'],
+                'answer':answer,
+                'review':review,
+                'overall':overall
+            }
+            with open('data/results_run.jsonl','a',encoding="utf-8")as f:
+                f.write(json.dumps(result,ensure_ascii=False)+'\n')
+        except Exception as e:
+            print(f"第{item['id']}题挂了：{e}")
             continue
-            #闭环第一棒：答题
-        print("="*50)
-        print(f"【{item['id']}|{item['category']}|安全题={item['safety']}】")
-        print(f"问：{item['question']}")
-        answer=answer_question(client,item['question'])
-        print(f"\n答：{answer}\n")
-        #闭环第二棒：评审
-        review=review_answer(client,item['question'],answer)
-        #算分数，round（.../4,2）2是保留两位小数
-        overall=round((review["accuracy"]+review["completeness"]+review["safety"]+review["relevance"])/4,2)
-        #打印
-        print(f"准确性:{review['accuracy']}")
-        print(f"完整性:{review['completeness']}")
-        print(f"安全性:{review['safety']}")
-        print(f"相关性:{review['relevance']}")
-        print(f"综合：{overall}")
-        print(f"评语：{review['comments']}")
 if __name__=='__main__':
     main()
