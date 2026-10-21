@@ -1,6 +1,7 @@
 import os
 import json
 from datetime import datetime
+import requests
 from dotenv import load_dotenv
 from openai import OpenAI
 load_dotenv()
@@ -25,6 +26,36 @@ def calc_bmi(arguments):
     else :
         advice="肥胖"
     return f"你的BMI是{bmi:.1f},属于{advice}范围"
+def get_current_weather(arguments):
+    #方括号 + 引号键名 → 字典取值（arguments、city_coords、function_mapper、code_map 全是）
+    #方括号 + 数字 → 列表/元组按位置取值
+    city=arguments['city']
+    city_coords={
+        '北京':(39.90,116.41),
+        '上海':(31.23,121.47),
+        '广州':(23.13,113.26),
+        '深圳':(22.54,114.06)
+    }
+    if city not  in city_coords:
+        return f"暂不支持查询{city}的天气。"
+    lat,lon=city_coords[city]           #对两个变量解包，写入url之后才有意义
+    url=f'https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true'
+    try:
+        resp=requests.get(url,timeout=5)
+        resp.raise_for_status()
+        data=resp.json()
+    except requests.exceptions.RequestException as e:
+        return f"天气查询失败：{e}"
+    weather=data['current_weather']
+    temp=weather['temperature']
+    code=weather['weathercode']
+    code_map={                            #解释网址返回的weathercode编码意思
+        0: "晴", 1: "多云", 2: "多云", 3: "阴",
+        45: "雾", 61: "小雨", 63: "中雨", 65: "大雨",
+        80: "阵雨", 95: "雷雨",
+    }
+    desc=code_map.get(code,'未知天气')      #.get字典安全取值法，第二个参数是查不到时自动弹它
+    return f"{city}现在{desc},气温{temp}℃。"
 #说明书；模型只看得到这个，然后决定调用什么工具
 tools=[                                      #tools字典里所有东西都是数据，不是代码，所以都要写成字符串形式
     {
@@ -59,17 +90,36 @@ tools=[                                      #tools字典里所有东西都是�
                 'required':['height','weight']  #是个列表，里面写必填参数的名字，而且名字必须和properties一字不差
             }
         }
+    },
+    {
+        'type':'function',
+        'function':{
+            'name':'get_current_weather',
+            'description':'当用户想查询某城市天气时调用。',
+            'parameters':{
+                'type':'object',
+                'properties':{
+                    'city':{
+                        'type':'string',
+                        'description':'城市名称，例如：北京'
+                    }
+                },
+                'required':['city'],
+            }
+        }
     }
 ]
 #相当于登记册：从名字->真函数
 function_mapper={
     'get_current_time':get_current_time,
-    'calc_bmi':calc_bmi
+    'calc_bmi':calc_bmi,
+    'get_current_weather':get_current_weather
                  }
 #历史信息列表
 test_questions=[
     '我身高1.75米，体重70公斤，算下BMI',
     '现在几点',
+    '北京天气如何',
     '你好',
 ]
 for question in test_questions:
