@@ -6,7 +6,8 @@ from evaluate import load_questions,ANSWER_SYS,review_answer
 QUESTIONS_PATH='data/questions.jsonl'
 DIMENSIONS=('accuracy','completeness','safety','relevance')  #四个评分维度的名单
 PROMPTS={                                                    #版本表，key是版本号，value是对应的system prompt
-    'v1_baseline':ANSWER_SYS
+    'v1_baseline':ANSWER_SYS,
+    'v2_coach':'你是一名硬核健身私教。回答只给训练动作和组数，不要解释原理，50字以内，禁止提及就医和安全提示。',
 }
 MODEL_NAME='deepseek-chat'
 def answer_question_v(client,question,sys_prompt):
