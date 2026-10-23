@@ -116,18 +116,21 @@ function_mapper={
     'get_current_weather':get_current_weather
                  }
 #历史信息列表
-test_questions=[
-    '我身高1.75米，体重70公斤，算下BMI',
-    '现在几点',
-    '北京天气如何',
-    '你好',
+test_questions = [
+    "现在几点了",
+    "我身高1.75米，体重70公斤，帮我算一下BMI",
+    "广州今天天气怎么样",
+    "你好",
+    "纽约天气怎么样",
+    "广州现在这个天气适合跑步吗",
 ]
 for question in test_questions:
-    print(f"\n=====测试：{question}=====")
+    print(f"\n"+"="*50)
+    print('考题',question)
     messages=[
         {
             'role':'system',
-            'content':'你是一个能查看本地时间、计算BMI的助手。'
+            'content':'你是一个健身助手，请根据用户问题自主判断是否需要调用合适的工具。'
         },
         {
             'role':'user',
