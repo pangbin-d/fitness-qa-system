@@ -1,4 +1,4 @@
-import sys
+import sys                                                  #自带的系统工具箱，只用了sys.argv
 import json
 from datetime import datetime
 from info_extraction import make_client,chat_with_retry
@@ -13,7 +13,7 @@ MODEL_NAME='deepseek-chat'
 def answer_question_v(client,question,sys_prompt):
     messages = [{
         'role': "system",
-        'content': sys_prompt             #1
+        'content': sys_prompt
     },
         {
             'role': "user",
