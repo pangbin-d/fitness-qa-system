@@ -10,3 +10,5 @@ coding.txt
 writing.txt
 out/
 results.jsonl
+chroma_db
+DB_DIR/
