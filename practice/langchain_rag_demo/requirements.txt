@@ -1,0 +1,8 @@
+langchain>=1.0
+langchain-core>=1.0
+langchain-chroma
+langchain-text-splitters
+langchain-huggingface
+langchain-deepseek
+sentence-transformers
+python-dotenv

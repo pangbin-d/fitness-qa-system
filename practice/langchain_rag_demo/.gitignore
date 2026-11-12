@@ -1,0 +1,25 @@
+# 虚拟环境
+.venv/
+venv/
+env/
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 向量库落盘目录（动辄几百 MB，绝对不能提交）
+chroma_demo/
+
+# 密钥（这是最重要的一条）
+.env
+
+
+# IDE
+.idea/
+.vscode/
+
+# 系统文件
+.DS_Store
+Thumbs.db
