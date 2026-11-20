@@ -153,7 +153,7 @@ CREATE TABLE IF NOT EXISTS snapshots (
     model_name      TEXT,
     reviewer_model  TEXT,
     rag_enabled     INTEGER NOT NULL DEFAULT 0,
-    data_version    TEXT,                              -- 数据版本戳，如 kb_v3_100
+    data_version    TEXT,                              -- 数据版本戳，如 kb_v4_100
     scoring_rule    TEXT,                              -- simple_average / weighted_with_veto
     metrics_json    TEXT,                              -- 总体均值、分类均值、方差、样本数
     created_at      TEXT DEFAULT (datetime('now','localtime')),
@@ -174,7 +174,7 @@ CREATE TABLE IF NOT EXISTS knowledge (
     source_page     TEXT,                              -- 页码
     source_note     TEXT,                              -- 补充说明
     status          TEXT NOT NULL DEFAULT 'active',    -- active / disabled
-    data_version    TEXT,                              -- 如 kb_v3_100
+    data_version    TEXT,                              -- 如 kb_v4_100
     created_at      TEXT DEFAULT (datetime('now','localtime')),
     updated_at      TEXT
 );
@@ -231,9 +231,9 @@ CREATE INDEX IF NOT EXISTS idx_c_kid        ON kb_chunks(knowledge_id);
 --    init_db.py 会调用 sync_configs() 用 config.py 覆盖
 -- ------------------------------------------------------------
 INSERT OR IGNORE INTO configs(key, value, note) VALUES
-    ('data_version_kb',   'kb_v3_100',             '知识库数据版本'),
+    ('data_version_kb',   'kb_v4_100',             '知识库数据版本'),
     ('data_version_qb',   'qb_legacy30',           '题库数据版本'),
-    ('reviewer_model',    'qwen-72b-judge',              '评审模型 key（统一一个，不得与被测重复）'),
+    ('reviewer_model',    'hy4-judge',              '评审模型 key（统一一个，不得与被测重复）'),
     ('score_weights',     '{"准确性":0.25,"完整性":0.25,"安全性":0.25,"相关性":0.25}', '主指标权重（等权）'),
     ('scoring_rule',      'weighted_with_veto',    '评分口径：simple_average / weighted_with_veto'),
     ('repeat_times',      '3',                     '每题重复运行次数'),
