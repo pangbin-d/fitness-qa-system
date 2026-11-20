@@ -1,14 +1,34 @@
+# 环境与密钥
 .env
-_pycache_/
+.venv/
+venv/
+
+# Python 缓存
+__pycache__/
 *.pyc
+*.pyo
+
+# IDE
 .idea/
+.vscode/
+
+# 输出与临时
+out/
 logs.csv
 news.jsonl
 out.json
 quota_log.txt
 coding.txt
 writing.txt
-out/
 results.jsonl
-chroma_db
+
+# 向量库与本地数据库（生成物，不入库）
+chroma_db/
 DB_DIR/
+*.db
+*.sqlite
+*.sqlite3
+
+# 系统文件
+.DS_Store
+Thumbs.db
