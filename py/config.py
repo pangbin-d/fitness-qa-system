@@ -55,14 +55,13 @@ DATA_VERSION = {
 # 全部统一走硅基流动：同一个 base_url、同一个 api_key，
 # 靠 chat.completions.create(model=...) 的 model 参数区分模型。
 # 因此一个 client 对象就能同时服务被测和评审，不需要建两个。
+# models 表的 provider 字段是运行期权威：evaluate.py 按它取 client。
+# 当前 5 个模型全部是 siliconflow，所以这里只留一个入口。
+# 将来若某模型只在官方 API 提供，在此加一条即可，业务代码无需改动。
 PROVIDERS = {
     "siliconflow": {
         "base_url": "https://api.siliconflow.cn/v1",
         "api_key_env": "SILICONFLOW_API_KEY",
-    },
-    "deepseek": {
-        "base_url": "https://api.deepseek.com",
-        "api_key_env": "DEEPSEEK_API_KEY",
     },
 }
 
@@ -184,7 +183,7 @@ EVAL = {
 # ---------- 检索 ----------
 RAG = {
     "top_k": 3,
-    "embedding_model": "BAAI/bge-small-zh-v1.5",
+    "embedding_model": "BAAI/bge-large-zh-v1.5",
     "chunk_size": 200,
     "chunk_overlap": 40,
 }
