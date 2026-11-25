@@ -197,7 +197,8 @@ def build_retriever():
 
         return retrieve
     """
-    return None
+    import embed_knowledge
+    return embed_knowledge.retrieve
 
 
 # ============================================================
