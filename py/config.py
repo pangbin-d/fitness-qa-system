@@ -81,7 +81,7 @@ PROVIDERS = {
 # 单位：元/百万 token（输入, 输出）
 #   Qwen/Qwen3.5-9B                       (0.50,  4.00)
 #   zai-org/GLM-4.5-Air                   (1.00,  6.00)
-#   ByteDance-Seed/Seed-OSS-36B-Instruct  (1.50,  4.00)
+#   Qwen/Qwen3-32B                        (1.00,  4.00)
 #   deepseek-ai/DeepSeek-V4.1-Flash       (2.00,  8.00)  ← 注意有分时价，2:00-8:00 半价
 #   tencent/Hy4-preview                   (6.00, 18.00)
 MODELS_SEED = [
@@ -105,13 +105,14 @@ MODELS_SEED = [
         "note": "智谱轻量 MoE（1/6），与 Qwen-9B 构成同量级不同厂商对照",
     },
     {
-        "model_key": "seed-oss-36b",
-        "display_name": "Seed-OSS-36B-Instruct",
+        "model_key": "qwen3-32b",
+        "display_name": "Qwen3-32B",
         "provider": "siliconflow",
-        "model_id": "ByteDance-Seed/Seed-OSS-36B-Instruct",
+        "model_id": "Qwen/Qwen3-32B",
         "role": "candidate",
         "temperature": 0.3,
-        "note": "字节 36B（1.5/4），中间参数量级，观察规模效应",
+        "note": "阿里 32B dense，与 qwen3.5-9b 同厂商，"
+                "可隔离参数量单一变量（替代原 Seed-OSS-36B 中间档位）",
     },
     {
         "model_key": "deepseek-v4.1-flash",
